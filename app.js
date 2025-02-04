@@ -1,18 +1,21 @@
 const check_btn = document.querySelector('.check-btn');
 
-let daily_btn =document.querySelector('.daily').attributes[1];
+let daily_btn =document.querySelector('#daily-btn');
 
+// Daily Question fetcher API
 async function dailyUpdate(){
     const URL = `https://alfa-leetcode-api.onrender.com/daily`;
     let response = await fetch(URL);
     let data = await response.json();
-     daily_btn.value = data.questionLink;
+     daily_btn.href = data.questionLink;
     
 }
 
 
 // uncomment below line to run dailyUpdate function
 dailyUpdate();
+
+// no of Question fetcher API
 check_btn.addEventListener('click', async () =>{
     const username=document.querySelector(".username").value;
     const URL= `https://alfa-leetcode-api.onrender.com/${username}/solved`;
@@ -26,7 +29,7 @@ check_btn.addEventListener('click', async () =>{
     let para=document.querySelector('.num');
     para.innerText=`${solved} Q`;
 })
-
+// stars animation
 function createStars() {
     const stars = document.querySelector('.stars');
     const count = 90; // Increase or decrease number of stars
