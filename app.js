@@ -115,11 +115,11 @@ function createStars() {
         const duration = minDuration + Math.random() * (maxDuration - minDuration);
         
         star.style.cssText = `
-            left: ${x}%,
-            top: ${y}%,
-            width: ${size}px,
-            height: ${size}px,
-            --duration: ${duration}s,
+            left: ${x}%;
+            top: ${y}%;
+            width: ${size}px;
+            height: ${size}px;
+            --duration: ${duration}s
         `;
         
         stars.appendChild(star);
