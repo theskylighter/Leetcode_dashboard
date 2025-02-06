@@ -28,8 +28,53 @@ check_btn.addEventListener('click', async () =>{
         const response = await fetch(URL);
         const data = await response.json();
         let solved = data.solvedProblem;
+        
+        // Update the solved count
         let para = document.querySelector('.num');
         para.innerText = `${solved} Q`;
+        
+        // Add data to leaderboard
+        const tableBody = document.getElementById('leaderboard-body');
+        
+        // Check if user already exists in leaderboard
+        const existingRow = Array.from(tableBody.getElementsByTagName('tr')).find(row => 
+            row.querySelector('th').textContent.trim() === username
+        );
+
+        // If user exists, update their row, otherwise add new row
+        const rowContent = `
+            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                ${username}
+            </th>
+            <td class="px-6 py-4">
+                ${solved || 0}
+            </td>
+            <td class="px-6 py-4">
+                ${data.easySolved || 0}
+            </td>
+            <td class="px-6 py-4">
+                ${data.mediumSolved || 0}
+            </td>
+            <td class="px-6 py-4">
+                ${data.hardSolved || 0}
+            </td>
+            <td class="px-6 py-4 text-right">
+                <a href="https://leetcode.com/${username}" target="_blank" rel="noopener" 
+                   class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                    Profile
+                </a>
+            </td>
+        `;
+
+        if (existingRow) {
+            existingRow.innerHTML = rowContent;
+        } else {
+            const newRow = document.createElement('tr');
+            newRow.className = "bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200";
+            newRow.innerHTML = rowContent;
+            tableBody.appendChild(newRow);
+        }
+
     } catch (error) {
         let para = document.querySelector('.num');
         para.innerText = 'Error occurred';
