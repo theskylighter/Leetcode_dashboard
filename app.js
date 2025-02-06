@@ -17,17 +17,26 @@ dailyUpdate();
 
 // no of Question fetcher API
 check_btn.addEventListener('click', async () =>{
-    const username=document.querySelector(".username").value;
-    const URL= `https://alfa-leetcode-api.onrender.com/${username}/solved`;
-    let response = await fetch(URL);
-    console.log(response);
-    let data = await response.json();
-    console.log(data);
-
-    let solved= data.solvedProblem;
-    console.log(solved);
-    let para=document.querySelector('.num');
-    para.innerText=`${solved} Q`;
+    const username = document.querySelector(".username").value;
+    const checkOutput = document.querySelector('.check-output');
+    const URL = `https://alfa-leetcode-api.onrender.com/${username}/solved`;
+    
+    // Show loading state
+    checkOutput.classList.add('loading');
+    
+    try {
+        const response = await fetch(URL);
+        const data = await response.json();
+        let solved = data.solvedProblem;
+        let para = document.querySelector('.num');
+        para.innerText = `${solved} Q`;
+    } catch (error) {
+        let para = document.querySelector('.num');
+        para.innerText = 'Error occurred';
+    } finally {
+        // Hide loading state
+        checkOutput.classList.remove('loading');
+    }
 })
 // stars animation
 function createStars() {
@@ -55,11 +64,11 @@ function createStars() {
         const duration = minDuration + Math.random() * (maxDuration - minDuration);
         
         star.style.cssText = `
-            left: ${x}%;
-            top: ${y}%;
-            width: ${size}px;
-            height: ${size}px;
-            --duration: ${duration}s;
+            left: ${x}%,
+            top: ${y}%,
+            width: ${size}px,
+            height: ${size}px,
+            --duration: ${duration}s,
         `;
         
         stars.appendChild(star);
