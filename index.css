@@ -37,3 +37,53 @@
         filter: brightness(0.8);
     }
 }
+
+@media (max-width: 480px) {
+    .input-area{
+        flex-direction: column;
+        align-items: flex-start;
+
+    }
+    .lower-section{
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .table{
+        width: 90vw;
+    }
+}
+
+/* Responsive table styles */
+@media (max-width: 768px) {
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+       
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    .table-container table {
+        width: 100%;
+        min-width: 650px; /* Ensure minimum width to prevent squishing */
+    }
+
+    .table-container::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+}
