@@ -36,6 +36,12 @@ check_btn.addEventListener('click', async () =>{
         // Add data to leaderboard
         const tableBody = document.getElementById('leaderboard-body');
         
+        // If this is the first real data, clear placeholder rows
+        const isFirstEntry = tableBody.querySelector('th').textContent.trim() === '---';
+        if (isFirstEntry) {
+            tableBody.innerHTML = '';
+        }
+
         // Check if user already exists in leaderboard
         const existingRow = Array.from(tableBody.getElementsByTagName('tr')).find(row => 
             row.querySelector('th').textContent.trim() === username

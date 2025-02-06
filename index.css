@@ -111,3 +111,17 @@
 .loading .num {
     display: none;
 }
+
+/* Footer positioning styles */
+body {
+    min-height: 100vh;
+    position: relative;
+    padding-bottom: 80px; /* Height of footer + some padding */
+}
+
+footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    min-height: 60px;
+}
