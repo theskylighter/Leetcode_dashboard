@@ -127,4 +127,7 @@ function createStars() {
 }
 
 // Call createStars when document is loaded
-document.addEventListener('DOMContentLoaded', createStars);
+document.addEventListener('DOMContentLoaded', () => {
+    createStars();
+    check_btn.click();
+});
