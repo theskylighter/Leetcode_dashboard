@@ -1,133 +1,279 @@
-const check_btn = document.querySelector('.check-btn');
+// Encapsulate behavior so DOM queries happen after load
+// Daily question & leaderboard + stars management
 
-let daily_btn =document.querySelector('#daily-btn');
-
-// Daily Question fetcher API
-async function dailyUpdate(){
-    const URL = `https://alfa-leetcode-api.onrender.com/daily`;
-    let response = await fetch(URL);
-    let data = await response.json();
-     daily_btn.href = data.questionLink;
-    
+async function fetchJson(url) {
+    const res = await fetch(url);
+    if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        const message = text || res.statusText || `HTTP ${res.status}`;
+        const err = new Error(message);
+        err.status = res.status;
+        throw err;
+    }
+    return res.json();
 }
 
+function createRowElement(user) {
+    const tr = document.createElement('tr');
+    tr.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200';
 
-// uncomment below line to run dailyUpdate function
-dailyUpdate();
+    const th = document.createElement('th');
+    th.scope = 'row';
+    th.className = 'px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white';
+    th.textContent = user.username;
 
-// no of Question fetcher API
-check_btn.addEventListener('click', async () =>{
-    const username = document.querySelector(".username").value;
-    const checkOutput = document.querySelector('.check-output');
-    const URL = `https://alfa-leetcode-api.onrender.com/${username}/solved`;
-    
-    // Show loading state
-    checkOutput.classList.add('loading');
-    
-    try {
-        const response = await fetch(URL);
-        const data = await response.json();
-        let solved = data.solvedProblem;
-        
-        // Update the solved count
-        let para = document.querySelector('.num');
-        para.innerText = `${solved} Q`;
-        
-        // Add data to leaderboard
-        const tableBody = document.getElementById('leaderboard-body');
-        
-        // If this is the first real data, clear placeholder rows
-        const isFirstEntry = tableBody.querySelector('th').textContent.trim() === '---';
-        if (isFirstEntry) {
-            tableBody.innerHTML = '';
-        }
+    const tdTotal = document.createElement('td');
+    tdTotal.className = 'px-6 py-4';
+    tdTotal.textContent = user.solved ?? 0;
 
-        // Check if user already exists in leaderboard
-        const existingRow = Array.from(tableBody.getElementsByTagName('tr')).find(row => 
-            row.querySelector('th').textContent.trim() === username
-        );
+    const tdEasy = document.createElement('td');
+    tdEasy.className = 'px-6 py-4';
+    tdEasy.textContent = user.easySolved ?? 0;
 
-        // If user exists, update their row, otherwise add new row
-        const rowContent = `
-            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                ${username}
-            </th>
-            <td class="px-6 py-4">
-                ${solved || 0}
-            </td>
-            <td class="px-6 py-4">
-                ${data.easySolved || 0}
-            </td>
-            <td class="px-6 py-4">
-                ${data.mediumSolved || 0}
-            </td>
-            <td class="px-6 py-4">
-                ${data.hardSolved || 0}
-            </td>
-            <td class="px-6 py-4 text-right">
-                <a href="https://leetcode.com/${username}" target="_blank" rel="noopener" 
-                   class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
-                    Profile
-                </a>
-            </td>
-        `;
+    const tdMedium = document.createElement('td');
+    tdMedium.className = 'px-6 py-4';
+    tdMedium.textContent = user.mediumSolved ?? 0;
 
-        if (existingRow) {
-            existingRow.innerHTML = rowContent;
-        } else {
-            const newRow = document.createElement('tr');
-            newRow.className = "bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200";
-            newRow.innerHTML = rowContent;
-            tableBody.appendChild(newRow);
-        }
+    const tdHard = document.createElement('td');
+    tdHard.className = 'px-6 py-4';
+    tdHard.textContent = user.hardSolved ?? 0;
 
-    } catch (error) {
-        let para = document.querySelector('.num');
-        para.innerText = 'Error occurred';
-    } finally {
-        // Hide loading state
-        checkOutput.classList.remove('loading');
-    }
-})
-// stars animation
-function createStars() {
-    const stars = document.querySelector('.stars');
-    const count = 90; // Increase or decrease number of stars
+    const tdAction = document.createElement('td');
+    tdAction.className = 'px-6 py-4 text-right';
+    const a = document.createElement('a');
+    a.href = `https://leetcode.com/${encodeURIComponent(user.username)}`;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.className = 'font-medium text-blue-600 dark:text-blue-500 hover:underline';
+    a.textContent = 'Profile';
+    tdAction.appendChild(a);
 
-    // Configurable attributes
-    const minSize = 0.3;  // Minimum star size
-    const maxSize = 3.5;  // Maximum star size
-    const minDuration = 2; // Minimum twinkle duration in seconds
-    const maxDuration = 5; // Maximum twinkle duration in seconds
-    
-    for (let i = 0; i < count; i++) {
-        const star = document.createElement('div');
-        star.className = 'star';
-        
-        // Random position
-        const x = Math.random() * 100;
-        const y = Math.random() * 100;
-        
-        // Random size within range
-        const size = minSize + Math.random() * (maxSize - minSize);
-        
-        // Random duration within range
-        const duration = minDuration + Math.random() * (maxDuration - minDuration);
-        
-        star.style.cssText = `
-            left: ${x}%;
-            top: ${y}%;
-            width: ${size}px;
-            height: ${size}px;
-            --duration: ${duration}s
-        `;
-        
-        stars.appendChild(star);
-    }
+    tr.appendChild(th);
+    tr.appendChild(tdTotal);
+    tr.appendChild(tdEasy);
+    tr.appendChild(tdMedium);
+    tr.appendChild(tdHard);
+    tr.appendChild(tdAction);
+
+    return tr;
 }
 
-// Call createStars when document is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    const checkBtn = document.querySelector('.check-btn');
+    const dailyBtn = document.querySelector('#daily-btn');
+    const checkOutput = document.querySelector('.check-output');
+    const usernameInput = document.querySelector('.username');
+    const numPara = document.querySelector('.num');
+    const tableBody = document.getElementById('leaderboard-body');
+    const stars = document.querySelector('.stars');
+
+    // Status message element (for friendly user errors)
+    let statusEl = checkOutput.querySelector('.status');
+    if (!statusEl) {
+        statusEl = document.createElement('div');
+        statusEl.className = 'status text-sm text-red-500 mt-2';
+        statusEl.setAttribute('aria-live', 'polite');
+        checkOutput.appendChild(statusEl);
+    }
+
+    // Leaderboard persisted in localStorage
+    let leaderboard = [];
+    try {
+        const raw = localStorage.getItem('leetdash_leaderboard');
+        if (raw) leaderboard = JSON.parse(raw);
+    } catch (e) {
+        leaderboard = [];
+    }
+
+    function saveLeaderboard() {
+        try { localStorage.setItem('leetdash_leaderboard', JSON.stringify(leaderboard)); } catch (e) {}
+    }
+
+    function renderLeaderboard() {
+        tableBody.innerHTML = '';
+        if (!leaderboard.length) {
+            // placeholder row
+            const placeholder = document.createElement('tr');
+            placeholder.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200';
+
+            const th = document.createElement('th');
+            th.scope = 'row';
+            th.className = 'px-6 py-4 font-medium text-gray-500 whitespace-nowrap dark:text-gray-400';
+            th.textContent = '---';
+
+            const cols = [ '-', '-', '-', '-' ];
+            placeholder.appendChild(th);
+            cols.forEach(c => {
+                const td = document.createElement('td');
+                td.className = 'px-6 py-4';
+                td.textContent = c;
+                placeholder.appendChild(td);
+            });
+
+            const lastTd = document.createElement('td');
+            lastTd.className = 'px-6 py-4 text-right';
+            const span = document.createElement('span');
+            span.className = 'font-medium text-gray-400 dark:text-gray-500';
+            span.textContent = '---';
+            lastTd.appendChild(span);
+            placeholder.appendChild(lastTd);
+
+            tableBody.appendChild(placeholder);
+            return;
+        }
+
+        // sort by total solved desc
+        const sorted = leaderboard.slice().sort((a, b) => (b.solved || 0) - (a.solved || 0));
+        sorted.forEach(u => tableBody.appendChild(createRowElement(u)));
+    }
+
+    async function dailyUpdate() {
+        const URL = `https://alfa-leetcode-api.onrender.com/daily`;
+        try {
+            const data = await fetchJson(URL);
+            if (dailyBtn) dailyBtn.href = data.questionLink || '#';
+
+            const dailyTitle = document.querySelector('.daily-title');
+            const dailyDifficulty = document.querySelector('.daily-difficulty');
+            const dailyDescription = document.querySelector('.daily-description');
+            const dailyLink = document.querySelector('.daily-link');
+
+            if (dailyTitle) {
+                // Title may contain markup — render plain text for title
+                dailyTitle.textContent = (data.questionTitle || data.question || 'Daily Question');
+            }
+            if (dailyDifficulty) {
+                dailyDifficulty.textContent = data.difficulty || '';
+                dailyDifficulty.className = 'daily-difficulty inline-block mt-2 px-3 py-1 rounded-full text-sm font-semibold text-white ';
+                if (data.difficulty === 'Easy') {
+                    dailyDifficulty.classList.add('bg-green-500');
+                } else if (data.difficulty === 'Medium') {
+                    dailyDifficulty.classList.add('bg-yellow-500');
+                } else if (data.difficulty === 'Hard') {
+                    dailyDifficulty.classList.add('bg-red-500');
+                }
+            }
+            if (dailyDescription) {
+                // The API may return HTML for the question body. Render a sanitized subset of tags.
+                const raw = data.questionBody || data.question || '';
+                dailyDescription.innerHTML = sanitizeAllowedHtml(raw, ['p','code','strong','em','ol','ul','li','br']);
+            }
+            if (dailyLink) dailyLink.href = data.questionLink || '#';
+        } catch (error) {
+            console.error('Error fetching daily question:', error);
+            const dailyTitle = document.querySelector('.daily-title');
+            if (dailyTitle) dailyTitle.textContent = 'Failed to load daily question';
+        }
+    }
+
+    // Very small sanitizer that keeps only a whitelist of tags and strips attributes.
+    // Not a replacement for a full sanitizer library, but reasonable for simple content.
+    function sanitizeAllowedHtml(htmlString, allowedTags = []) {
+        if (!htmlString) return '';
+        const template = document.createElement('template');
+        template.innerHTML = htmlString;
+
+        function walk(node) {
+            const nodeType = node.nodeType;
+            if (nodeType === Node.TEXT_NODE) return;
+
+            if (nodeType === Node.ELEMENT_NODE) {
+                const tag = node.tagName.toLowerCase();
+                if (!allowedTags.includes(tag)) {
+                    // replace node with its children (effectively stripping the tag)
+                    const parent = node.parentNode;
+                    while (node.firstChild) parent.insertBefore(node.firstChild, node);
+                    parent.removeChild(node);
+                    return; // children already moved — no need to recurse here
+                }
+
+                // remove all attributes for safety
+                const attrs = Array.from(node.attributes || []);
+                attrs.forEach(a => node.removeAttribute(a.name));
+            }
+
+            // recurse into children
+            const children = Array.from(node.childNodes);
+            children.forEach(child => walk(child));
+        }
+
+        walk(template.content);
+        return template.innerHTML;
+    }
+
+    async function checkUser(usernameRaw) {
+        const username = String(usernameRaw || '').trim().toLowerCase();
+        if (!username) {
+            statusEl.textContent = 'Please enter a username.';
+            return;
+        }
+        statusEl.textContent = '';
+
+        const URL = `https://alfa-leetcode-api.onrender.com/${encodeURIComponent(username)}/solved`;
+        checkOutput.classList.add('loading');
+        try {
+            const data = await fetchJson(URL);
+            const solved = data.solvedProblem || 0;
+            numPara.textContent = `${solved} Q`;
+
+            // update leaderboard data structure
+            const idx = leaderboard.findIndex(u => (u.username || '').toLowerCase() === username);
+            const entry = {
+                username: username,
+                solved: solved,
+                easySolved: data.easySolved || 0,
+                mediumSolved: data.mediumSolved || 0,
+                hardSolved: data.hardSolved || 0
+            };
+
+            if (idx >= 0) leaderboard[idx] = entry; else leaderboard.push(entry);
+            saveLeaderboard();
+            renderLeaderboard();
+        } catch (error) {
+            console.error('Error fetching solved count:', error);
+            statusEl.textContent = 'Failed to fetch user data. Please try again.';
+            numPara.textContent = 'Error occurred';
+        } finally {
+            checkOutput.classList.remove('loading');
+        }
+    }
+
+    function createStars() {
+        if (!stars) return;
+        // avoid duplicating stars
+        if (stars.children.length) return;
+
+        // responsive count
+        const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+        let count = 90;
+        if (viewportWidth < 480) count = 30;
+        else if (viewportWidth < 768) count = 60;
+
+        const minSize = 0.3;
+        const maxSize = 3.5;
+        const minDuration = 2;
+        const maxDuration = 5;
+
+        for (let i = 0; i < count; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            const x = Math.random() * 100;
+            const y = Math.random() * 100;
+            const size = minSize + Math.random() * (maxSize - minSize);
+            const duration = minDuration + Math.random() * (maxDuration - minDuration);
+            star.style.cssText = `left: ${x}%; top: ${y}%; width: ${size}px; height: ${size}px; --duration: ${duration}s`;
+            stars.appendChild(star);
+        }
+    }
+
+    // Initial render & hooks
+    renderLeaderboard();
     createStars();
-    check_btn.click();
+    dailyUpdate();
+
+    checkBtn.addEventListener('click', () => checkUser(usernameInput.value));
+    // trigger initial check if value present
+    if (usernameInput && usernameInput.value && usernameInput.value.trim()) {
+        checkUser(usernameInput.value);
+    }
 });
