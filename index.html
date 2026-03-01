@@ -1,159 +1,134 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link href="index.css" rel="stylesheet" />
-    <title>LeetDash!</title>
-</head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeetDash — Your LeetCode Companion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="index.css" />
 
 <body>
-    <div class="stars"></div>
 
-    <!-- NAV -->
-    <nav>
-        <div class="nav-logo">
-            <div class="logo-icon">⚡</div>
-            LeetDash
-        </div>
-        <ul class="nav-links">
-            <li><a href="./index.html" class="active">Home</a></li>
-            <li><a id="daily-btn" href="#" target="_blank" rel="noopener">Daily Question</a></li>
-            <li><a href="https://www.theodinproject.com/paths/foundations/courses/foundations" target="_blank" rel="noopener">Web Dev?</a></li>
-            <li><a href="./index.html">About</a></li>
-        </ul>
-        <a href="https://leetcode.com/problemset/" target="_blank" rel="noopener" class="nav-cta">Start Solving →</a>
-    </nav>
+<!-- ─── PRIVATE BROWSING BANNER ─────────────────────────────────────────── -->
+<div id="private-banner" class="alert-banner alert-warn hidden">
+  ⚠ Private / Incognito mode detected — your data will be lost when this session ends.
+  <button class="alert-close" onclick="this.parentElement.classList.add('hidden')">✕</button>
+</div>
 
-    <!-- HERO -->
-    <section class="hero">
-        <div class="hero-badge">Daily LeetCode · Streak Tracker</div>
-        <h1>Level up your<br><span>coding game</span></h1>
-        <p>Track your LeetCode journey, tackle today's challenge, and compete on the leaderboard — all in one place.</p>
-        <div class="hero-actions">
-            <a href="https://leetcode.com/problemset/" target="_blank" rel="noopener" class="btn-primary">Start Solving Today →</a>
-            <a href="https://takeuforward.org/strivers-a2z-dsa-course/strivers-a2z-dsa-course-sheet-2" target="_blank" rel="noopener" class="btn-secondary">Learn about DSA</a>
-        </div>
-    </section>
+<!-- ─── BACKUP REMINDER BANNER ───────────────────────────────────────────── -->
+<div id="backup-banner" class="alert-banner alert-info hidden">
+  💾 It's been over 7 days since your last backup.
+  <a href="#/settings">Download a backup now →</a>
+  <button class="alert-close" id="dismiss-backup-banner">✕</button>
+</div>
 
-    <!-- STATS ROW -->
-    <div class="stats-row">
-        <div class="stat-item">
-            <div class="stat-number">2,500+</div>
-            <div class="stat-label">Questions</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">Daily</div>
-            <div class="stat-label">New Challenge</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">10⁹</div>
-            <div class="stat-label">Mod Constant</div>
-        </div>
+<!-- ─── NAVIGATION ────────────────────────────────────────────────────────── -->
+<nav id="main-nav">
+  <a href="#/" class="nav-logo">
+    <span class="logo-icon">⚡</span>LeetDash
+  </a>
+  <ul class="nav-links">
+    <li><a href="#/" data-route="dashboard">Dashboard</a></li>
+    <li><a href="#/progress" data-route="progress">Progress</a></li>
+    <li><a href="#/review" data-route="review">Review</a></li>
+    <li><a href="#/paths" data-route="paths">Paths</a></li>
+    <li><a href="#/badges" data-route="badges">Badges</a></li>
+    <li><a href="#/settings" data-route="settings">Settings</a></li>
+  </ul>
+  <div class="nav-right">
+    <span id="nav-streak" class="nav-streak-badge" title="Current streak"></span>
+    <button id="theme-toggle" class="icon-btn" title="Toggle theme">☀</button>
+  </div>
+</nav>
+
+<!-- ─── PAGE CONTAINER ────────────────────────────────────────────────────── -->
+<main id="app">
+  <div id="page-loading" class="page-loading">
+    <div class="spinner"></div>
+  </div>
+</main>
+
+<!-- ─── NOTES MODAL ───────────────────────────────────────────────────────── -->
+<div id="notes-modal" class="modal hidden">
+  <div class="modal-backdrop" id="notes-backdrop"></div>
+  <div class="modal-panel">
+    <div class="modal-header">
+      <h3 id="notes-modal-title">Problem Notes</h3>
+      <div class="modal-actions">
+        <span id="notes-save-indicator" class="save-indicator"></span>
+        <button class="icon-btn" id="close-notes-modal">✕</button>
+      </div>
     </div>
-
-    <!-- MAIN CONTENT -->
-    <div class="main">
-
-        <!-- Daily Question Card -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title">
-                    <span class="star-icon">★</span>
-                    <h2>Daily Question</h2>
-                </div>
-                <span class="badge daily-difficulty badge-medium">-</span>
-            </div>
-            <div class="card-body">
-                <h3 class="question-title">Loading...</h3>
-                <div class="question-desc daily-description">Fetching today's problem...</div>
-            </div>
-            <div class="card-footer">
-                <a href="#" class="daily-link btn-primary" target="_blank" rel="noopener" style="font-size:0.875rem;padding:11px 22px;">Solve Today's Problem →</a>
-            </div>
+    <div class="modal-body">
+      <div class="note-field">
+        <label>Approach</label>
+        <textarea id="note-approach" maxlength="2000" placeholder="Describe your approach…"></textarea>
+        <span class="char-count" id="approach-count">0 / 2000</span>
+      </div>
+      <div class="note-row">
+        <div class="note-field half">
+          <label>Time Complexity</label>
+          <input type="text" id="note-time" maxlength="50" placeholder="O(n)" />
         </div>
-
-        <!-- SIDEBAR -->
-        <div class="sidebar">
-
-            <!-- Progress Card -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">
-                        <span style="font-size:16px">📊</span>
-                        <h2>Your Progress</h2>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <p class="progress-title">Check LeetCode Profile</p>
-                    <div class="username-input-row">
-                        <input class="username-input" type="text" placeholder="LeetCode username" value="user2633T" />
-                        <button class="btn-check">Check</button>
-                    </div>
-                    <div class="total-solved check-output">
-                        <div class="loader"></div>
-                        <div class="total-number">-</div>
-                        <div class="total-label">Total Questions Solved</div>
-                        <div class="status" aria-live="polite"></div>
-                    </div>
-                    <div class="difficulty-bars">
-                        <div class="diff-row">
-                            <span class="diff-name easy">Easy</span>
-                            <div class="diff-bar-track">
-                                <div id="easy-bar" class="diff-bar-fill easy" style="width: 0%"></div>
-                            </div>
-                            <span id="easy-count" class="diff-count">-</span>
-                        </div>
-                        <div class="diff-row">
-                            <span class="diff-name medium">Med</span>
-                            <div class="diff-bar-track">
-                                <div id="medium-bar" class="diff-bar-fill medium" style="width: 0%"></div>
-                            </div>
-                            <span id="medium-count" class="diff-count">-</span>
-                        </div>
-                        <div class="diff-row">
-                            <span class="diff-name hard">Hard</span>
-                            <div class="diff-bar-track">
-                                <div id="hard-bar" class="diff-bar-fill hard" style="width: 0%"></div>
-                            </div>
-                            <span id="hard-count" class="diff-count">-</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Leaderboard Card -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">
-                        <span style="font-size:16px">🏆</span>
-                        <h2>Leaderboard</h2>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <table class="leaderboard-table">
-                        <thead>
-                            <tr>
-                                <th style="padding-left:0">#</th>
-                                <th style="text-align:left">User</th>
-                                <th>Total</th>
-                                <th>Easy</th>
-                                <th>Med</th>
-                                <th>Hard</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-body"></tbody>
-                    </table>
-                </div>
-            </div>
-
+        <div class="note-field half">
+          <label>Space Complexity</label>
+          <input type="text" id="note-space" maxlength="50" placeholder="O(1)" />
         </div>
+      </div>
+      <div class="note-field">
+        <label>Gotcha / Edge Cases</label>
+        <textarea id="note-gotcha" maxlength="2000" placeholder="Watch out for…"></textarea>
+        <span class="char-count" id="gotcha-count">0 / 2000</span>
+      </div>
+      <div class="note-field">
+        <label>Confidence</label>
+        <div class="star-rating" id="note-stars">
+          <span class="star" data-v="1">★</span>
+          <span class="star" data-v="2">★</span>
+          <span class="star" data-v="3">★</span>
+          <span class="star" data-v="4">★</span>
+          <span class="star" data-v="5">★</span>
+        </div>
+      </div>
     </div>
+  </div>
+</div>
 
-    <script src="./app.js"></script>
+<!-- ─── BADGE POPUP ────────────────────────────────────────────────────────── -->
+<div id="badge-popup" class="badge-popup hidden">
+  <div class="badge-popup-inner">
+    <div class="badge-popup-icon" id="badge-popup-icon">🏆</div>
+    <div class="badge-popup-text">
+      <div class="badge-popup-label">Achievement Unlocked!</div>
+      <div class="badge-popup-name" id="badge-popup-name"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MARK SOLVED MODAL ─────────────────────────────────────────────────── -->
+<div id="solve-modal" class="modal hidden">
+  <div class="modal-backdrop" id="solve-backdrop"></div>
+  <div class="modal-panel modal-sm">
+    <div class="modal-header">
+      <h3 id="solve-modal-title">Mark as Solved</h3>
+      <button class="icon-btn" id="close-solve-modal">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="solve-subtitle">How confident do you feel?</p>
+      <div class="rating-buttons" id="rating-buttons">
+        <button class="rating-btn" data-r="1">1<span>Blackout</span></button>
+        <button class="rating-btn" data-r="2">2<span>Hard</span></button>
+        <button class="rating-btn selected" data-r="3">3<span>Ok</span></button>
+        <button class="rating-btn" data-r="4">4<span>Good</span></button>
+        <button class="rating-btn" data-r="5">5<span>Easy</span></button>
+      </div>
+      <button class="btn-primary w-full" id="confirm-solve-btn">Confirm →</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
 </body>
-
 </html>
