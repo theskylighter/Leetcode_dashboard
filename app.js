@@ -13,42 +13,61 @@ async function fetchJson(url) {
     return res.json();
 }
 
-function createRowElement(user) {
+function createRowElement(user, rank) {
     const tr = document.createElement('tr');
-    tr.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200';
 
-    const th = document.createElement('th');
-    th.scope = 'row';
-    th.className = 'px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white';
-    th.textContent = user.username;
+    // Rank cell
+    const tdRank = document.createElement('td');
+    const rankSpan = document.createElement('span');
+    rankSpan.className = 'rank-num' + (rank === 1 ? ' gold' : rank === 2 ? ' silver' : rank === 3 ? ' bronze' : '');
+    rankSpan.textContent = rank;
+    tdRank.appendChild(rankSpan);
 
+    // Username cell
+    const tdUser = document.createElement('td');
+    const userCell = document.createElement('div');
+    userCell.className = 'username-cell';
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    avatar.textContent = (user.username || '?')[0].toUpperCase();
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = user.username;
+    userCell.appendChild(avatar);
+    userCell.appendChild(nameSpan);
+    tdUser.appendChild(userCell);
+
+    // Stats cells
     const tdTotal = document.createElement('td');
-    tdTotal.className = 'px-6 py-4';
+    tdTotal.className = 'td-mono';
     tdTotal.textContent = user.solved ?? 0;
 
     const tdEasy = document.createElement('td');
-    tdEasy.className = 'px-6 py-4';
+    tdEasy.className = 'td-mono';
+    tdEasy.style.color = 'var(--easy)';
     tdEasy.textContent = user.easySolved ?? 0;
 
     const tdMedium = document.createElement('td');
-    tdMedium.className = 'px-6 py-4';
+    tdMedium.className = 'td-mono';
+    tdMedium.style.color = 'var(--medium)';
     tdMedium.textContent = user.mediumSolved ?? 0;
 
     const tdHard = document.createElement('td');
-    tdHard.className = 'px-6 py-4';
+    tdHard.className = 'td-mono';
+    tdHard.style.color = 'var(--hard)';
     tdHard.textContent = user.hardSolved ?? 0;
 
+    // Profile link cell
     const tdAction = document.createElement('td');
-    tdAction.className = 'px-6 py-4 text-right';
     const a = document.createElement('a');
     a.href = `https://leetcode.com/${encodeURIComponent(user.username)}`;
     a.target = '_blank';
     a.rel = 'noopener';
-    a.className = 'font-medium text-blue-600 dark:text-blue-500 hover:underline';
-    a.textContent = 'Profile';
+    a.className = 'profile-link';
+    a.textContent = '→';
     tdAction.appendChild(a);
 
-    tr.appendChild(th);
+    tr.appendChild(tdRank);
+    tr.appendChild(tdUser);
     tr.appendChild(tdTotal);
     tr.appendChild(tdEasy);
     tr.appendChild(tdMedium);
@@ -59,19 +78,27 @@ function createRowElement(user) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const checkBtn = document.querySelector('.check-btn');
+    const checkBtn = document.querySelector('.btn-check');
     const dailyBtn = document.querySelector('#daily-btn');
     const checkOutput = document.querySelector('.check-output');
-    const usernameInput = document.querySelector('.username');
-    const numPara = document.querySelector('.num');
+    const usernameInput = document.querySelector('.username-input');
+    const numPara = document.querySelector('.total-number');
     const tableBody = document.getElementById('leaderboard-body');
     const stars = document.querySelector('.stars');
 
-    // Status message element (for friendly user errors)
+    // Difficulty bar elements
+    const easyBar = document.getElementById('easy-bar');
+    const mediumBar = document.getElementById('medium-bar');
+    const hardBar = document.getElementById('hard-bar');
+    const easyCount = document.getElementById('easy-count');
+    const mediumCount = document.getElementById('medium-count');
+    const hardCount = document.getElementById('hard-count');
+
+    // Status message element (pre-exists in new HTML)
     let statusEl = checkOutput.querySelector('.status');
     if (!statusEl) {
         statusEl = document.createElement('div');
-        statusEl.className = 'status text-sm text-red-500 mt-2';
+        statusEl.className = 'status';
         statusEl.setAttribute('aria-live', 'polite');
         checkOutput.appendChild(statusEl);
     }
@@ -92,39 +119,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderLeaderboard() {
         tableBody.innerHTML = '';
         if (!leaderboard.length) {
-            // placeholder row
             const placeholder = document.createElement('tr');
-            placeholder.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200';
-
-            const th = document.createElement('th');
-            th.scope = 'row';
-            th.className = 'px-6 py-4 font-medium text-gray-500 whitespace-nowrap dark:text-gray-400';
-            th.textContent = '---';
-
-            const cols = [ '-', '-', '-', '-' ];
-            placeholder.appendChild(th);
-            cols.forEach(c => {
-                const td = document.createElement('td');
-                td.className = 'px-6 py-4';
-                td.textContent = c;
-                placeholder.appendChild(td);
-            });
-
-            const lastTd = document.createElement('td');
-            lastTd.className = 'px-6 py-4 text-right';
-            const span = document.createElement('span');
-            span.className = 'font-medium text-gray-400 dark:text-gray-500';
-            span.textContent = '---';
-            lastTd.appendChild(span);
-            placeholder.appendChild(lastTd);
-
+            const tdEmpty = document.createElement('td');
+            tdEmpty.colSpan = 7;
+            tdEmpty.style.cssText = 'text-align:center;padding:1.5rem;color:var(--muted);font-family:\'JetBrains Mono\',monospace;font-size:0.8rem';
+            tdEmpty.textContent = 'No entries yet — check a username above';
+            placeholder.appendChild(tdEmpty);
             tableBody.appendChild(placeholder);
             return;
         }
 
         // sort by total solved desc
         const sorted = leaderboard.slice().sort((a, b) => (b.solved || 0) - (a.solved || 0));
-        sorted.forEach(u => tableBody.appendChild(createRowElement(u)));
+        sorted.forEach((u, i) => tableBody.appendChild(createRowElement(u, i + 1)));
     }
 
     async function dailyUpdate() {
@@ -133,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await fetchJson(URL);
             if (dailyBtn) dailyBtn.href = data.questionLink || '#';
 
-            const dailyTitle = document.querySelector('.daily-title');
+            const dailyTitle = document.querySelector('.question-title');
             const dailyDifficulty = document.querySelector('.daily-difficulty');
             const dailyDescription = document.querySelector('.daily-description');
             const dailyLink = document.querySelector('.daily-link');
@@ -143,14 +150,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 dailyTitle.textContent = (data.questionTitle || data.question || 'Daily Question');
             }
             if (dailyDifficulty) {
-                dailyDifficulty.textContent = data.difficulty || '';
-                dailyDifficulty.className = 'daily-difficulty inline-block mt-2 px-3 py-1 rounded-full text-sm font-semibold text-white ';
+                dailyDifficulty.textContent = data.difficulty || '-';
+                dailyDifficulty.className = 'badge daily-difficulty';
                 if (data.difficulty === 'Easy') {
-                    dailyDifficulty.classList.add('bg-green-500');
+                    dailyDifficulty.classList.add('badge-easy');
                 } else if (data.difficulty === 'Medium') {
-                    dailyDifficulty.classList.add('bg-yellow-500');
+                    dailyDifficulty.classList.add('badge-medium');
                 } else if (data.difficulty === 'Hard') {
-                    dailyDifficulty.classList.add('bg-red-500');
+                    dailyDifficulty.classList.add('badge-hard');
                 }
             }
             if (dailyDescription) {
@@ -214,16 +221,28 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const data = await fetchJson(URL);
             const solved = data.solvedProblem || 0;
-            numPara.textContent = `${solved} Q`;
+            const easy = data.easySolved || 0;
+            const medium = data.mediumSolved || 0;
+            const hard = data.hardSolved || 0;
+
+            numPara.textContent = solved;
+
+            // Update difficulty bars
+            if (easyBar) easyBar.style.width = `${solved ? Math.round((easy / solved) * 100) : 0}%`;
+            if (mediumBar) mediumBar.style.width = `${solved ? Math.round((medium / solved) * 100) : 0}%`;
+            if (hardBar) hardBar.style.width = `${solved ? Math.round((hard / solved) * 100) : 0}%`;
+            if (easyCount) easyCount.textContent = easy;
+            if (mediumCount) mediumCount.textContent = medium;
+            if (hardCount) hardCount.textContent = hard;
 
             // update leaderboard data structure
             const idx = leaderboard.findIndex(u => (u.username || '').toLowerCase() === username);
             const entry = {
                 username: username,
                 solved: solved,
-                easySolved: data.easySolved || 0,
-                mediumSolved: data.mediumSolved || 0,
-                hardSolved: data.hardSolved || 0
+                easySolved: easy,
+                mediumSolved: medium,
+                hardSolved: hard
             };
 
             if (idx >= 0) leaderboard[idx] = entry; else leaderboard.push(entry);
