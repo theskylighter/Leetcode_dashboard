@@ -1,44 +1,70 @@
 # LeetDash — LeetCode Progress Dashboard
 
-A lightweight, client-side web dashboard that tracks your LeetCode solving progress and displays a daily challenge. Built with vanilla HTML/CSS/JS, Tailwind CSS, and Flowbite components.
+A fully client-side, multi-page SPA that helps you track LeetCode solving progress, manage spaced-repetition reviews, follow curated study paths, and share your stats. Built with vanilla HTML/CSS/JS — no framework, no build step.
 
 ## Features
 
-- **Daily Question** — Automatically fetches and displays today's LeetCode Daily Challenge (title, difficulty badge, description, and direct link).
-- **Username Lookup** — Enter any LeetCode username to see their total solved count (easy / medium / hard breakdown).
-- **Local Leaderboard** — Every checked user is added to a persistent leaderboard stored in `localStorage`, sorted by total problems solved.
-- **Animated Starfield** — Decorative twinkling-star background that adapts its density to viewport size.
-- **Dark Mode Ready** — Uses Tailwind's `dark:` variants throughout; respects system/browser preference.
-- **Responsive** — Mobile-first layout with collapsible navbar, scrollable table, and stacked input controls on small screens.
+- **Dashboard** — At-a-glance readiness score, 52-week activity heat map, daily review queue, smart next-problem recommendation, company prep bar, and live contest/daily-challenge cards.
+- **Progress** — SVG topic radar chart across 10 key topics, weakest-topic highlights, solve history, and difficulty breakdown.
+- **Review Queue** — SM-2 spaced-repetition scheduler. Rate each review 1–5 to automatically schedule the next repetition date; overdue and upcoming items shown separately.
+- **Study Paths** — Track completion of Blind 75, NeetCode 150, and Grind 169 with per-section progress indicators.
+- **Achievements** — 14 unlockable badges (streak milestones, volume targets, difficulty goals, readiness thresholds, path completion).
+- **Notes Modal** — Per-problem notes (approach, time/space complexity, gotchas) with a 1–5 confidence star rating; auto-saves to `localStorage`.
+- **Settings** — LeetCode username, daily goal, target-company filter, one-click LeetCode profile fetch (solved counts, contest rating, recent submissions), and full JSON backup/restore.
+- **Shared Profile** — Shareable read-only profile URL encoding username, score, streak, and earned badges in the URL hash.
+- **Smart Banners** — Private/incognito mode warning and a 7-day backup reminder.
+- **Theme Toggle** — Light/dark mode switch persistent across sessions.
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
 | Markup | HTML5 |
-| Styling | Tailwind CSS v4 (CDN browser build) + custom CSS |
-| Components | Flowbite 3.1.1 (navbar, buttons, table) |
-| Logic | Vanilla JavaScript (ES2020+) |
+| Styling | Custom CSS (CSS variables, responsive, light/dark themes) |
+| Fonts | Syne + JetBrains Mono (Google Fonts) |
+| Logic | Vanilla JavaScript (ES2020+, no framework) |
+| Storage | `localStorage` (all data stored client-side) |
 | API | [alfa-leetcode-api](https://github.com/alfaarghya/alfa-leetcode-api) (hosted on Render) |
 
 ## Project Structure
 
 ```
-├── index.html   # Single-page HTML shell (navbar, hero, daily card, form, leaderboard table, footer)
-├── app.js       # All application logic (API calls, DOM updates, leaderboard persistence, starfield)
-├── index.css    # Custom styles (starfield animation, loader, responsive overrides, layout helpers)
-└── README.md
+├── index.html              # App shell: nav, banners, router mount point, modals
+├── index.css               # All styles (layout, components, animations, themes)
+├── build_data.py           # Script to build/update data/problems.json
+├── data/
+│   ├── problems.json       # Problem metadata (slug, title, difficulty, topics)
+│   ├── company-tags.json   # Company → problem slug mapping
+│   └── paths/
+│       ├── blind75.json    # Blind 75 path definition
+│       ├── neetcode150.json
+│       └── grind169.json
+└── js/
+    ├── utils.js            # Constants (LS keys, ALFA_API), date helpers, localStorage wrappers, toast
+    ├── compute.js          # Pure functions: topic radar, readiness score
+    ├── storage.js          # Streak, SM-2 algorithm, onProblemSolved, export/import
+    ├── api.js              # alfa-leetcode-api calls (profile, daily challenge, contests, calendar import)
+    ├── badges.js           # Badge definitions, evaluation logic, popup
+    ├── notes.js            # Notes modal open/save/close
+    ├── modals.js           # Solve/rate modal
+    ├── router.js           # App init, hash-based routing, event wiring
+    └── pages/
+        ├── dashboard.js    # Dashboard page render
+        ├── progress.js     # Progress page render
+        ├── review.js       # Review queue page render
+        ├── paths.js        # Study paths page render
+        ├── badges.js       # Achievements page render
+        ├── settings.js     # Settings page render
+        └── profile.js      # Shared profile page render
 ```
 
 ## How It Works
 
-1. On page load, `app.js` fires three actions:
-   - **Renders the leaderboard** from `localStorage`.
-   - **Creates the starfield** background (`div.star` elements with randomised position, size, and animation duration).
-   - **Fetches the daily challenge** from `https://alfa-leetcode-api.onrender.com/daily` and populates the Daily Question card.
-2. The user enters a LeetCode username and clicks **Check**.
-3. The app calls `https://alfa-leetcode-api.onrender.com/<username>/solved`, displays the result, and upserts the user into the leaderboard.
-4. The leaderboard is saved to `localStorage` so it persists across sessions.
+1. On load, `router.js` fetches `data/problems.json` and `data/company-tags.json`, checks storage health (private mode, backup reminder), recomputes streak and badges, then routes to the current hash.
+2. The hash-based router (`#/`, `#/progress`, `#/review`, etc.) swaps the `<main id="app">` content by calling the relevant `render*()` function.
+3. All user data (solve log, review queue, notes, badges, preferences) lives in `localStorage` under `ld:*` keys.
+4. The SM-2 algorithm in `storage.js` schedules review intervals; rating a problem (1–5) updates its ease factor and next-review date.
+5. The Settings page can fetch live stats from `alfa-leetcode-api` (solved counts, contest rating, recent AC submissions, submission calendar) and auto-import activity days into the solve log.
 
 ## Getting Started
 
@@ -58,7 +84,7 @@ Then navigate to `http://localhost:8000`.
 
 ## API Dependency
 
-All data comes from the **alfa-leetcode-api** public instance at `https://alfa-leetcode-api.onrender.com`. The free Render tier may cold-start, so the first request can take 30–60 seconds.
+Optional live stats come from the **alfa-leetcode-api** public instance at `https://alfa-leetcode-api.onrender.com`. The free Render tier may cold-start, so the first fetch can take 30–60 seconds. The app is fully functional offline without it.
 
 ## License
 
